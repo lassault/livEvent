@@ -94,9 +94,15 @@ export default async function HomePage({ searchParams }: PageProps) {
             ))}
           </ul>
         ) : (
-          <p className={styles.empty}>No hay eventos {filter === "today" ? "hoy" : filter === "past" ? "pasados" : "próximos"}.</p>
+          <p className={styles.empty}>No hay eventos {filterLabel(filter)}.</p>
         )}
       </main>
     </>
   );
+}
+
+function filterLabel(filter: EventFilter): string {
+  if (filter === "today") return "hoy";
+  if (filter === "past") return "pasados";
+  return "próximos";
 }

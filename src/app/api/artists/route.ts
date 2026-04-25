@@ -81,7 +81,6 @@ export async function POST(request: NextRequest) {
 
   // Insert artist record
   const { error: insertError } = await supabase.from("artists").insert({
-    artist_id: authData.user.id as unknown as number,
     email,
     name,
     gender,

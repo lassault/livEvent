@@ -67,11 +67,9 @@ export default async function ArtistDashboardPage() {
               )}
             </p>
           </div>
-          <form action="/api/artist/login" method="DELETE">
-            <Link href="/api/artist/logout" className={styles.logoutBtn}>
-              Cerrar sesión
-            </Link>
-          </form>
+          <Link href="/api/artist/logout" className={styles.logoutBtn}>
+            Cerrar sesión
+          </Link>
         </div>
 
         <div className={styles.grid}>

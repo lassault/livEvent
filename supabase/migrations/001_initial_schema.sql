@@ -124,8 +124,14 @@ CREATE POLICY "Artist insert survey" ON survey_index FOR INSERT
   WITH CHECK (auth.uid() IS NOT NULL);
 
 -- Artists can see/update their own profile
+-- All profiles are publicly readable (verified filter applied at query level)
 CREATE POLICY "Artist read own profile" ON artists FOR SELECT USING (true);
-CREATE POLICY "Artist insert own profile" ON artists FOR INSERT WITH CHECK (true);
+-- Only authenticated users can register as an artist (one record per auth user)
+CREATE POLICY "Artist insert own profile" ON artists FOR INSERT
+  WITH CHECK (
+    auth.uid() IS NOT NULL AND
+    email = (SELECT email FROM auth.users WHERE id = auth.uid())
+  );
 CREATE POLICY "Artist update own profile" ON artists FOR UPDATE
   USING (email = (
     SELECT email FROM auth.users WHERE id = auth.uid()
