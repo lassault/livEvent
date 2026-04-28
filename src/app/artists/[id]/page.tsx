@@ -3,6 +3,18 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import styles from "./page.module.css";
+import {
+  DEMO_ARTISTS,
+  DEMO_EVENTS,
+  DEMO_UPCOMING_EVENTS,
+} from "@/lib/demo-data";
+
+const IS_DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
+export async function generateStaticParams() {
+  if (!IS_DEMO) return [];
+  return DEMO_ARTISTS.map((a) => ({ id: String(a.artist_id) }));
+}
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -13,6 +25,85 @@ export default async function ArtistDetailPage({ params }: PageProps) {
   const artistId = parseInt(id, 10);
 
   if (isNaN(artistId)) notFound();
+
+  if (IS_DEMO) {
+    const artist = DEMO_ARTISTS.find((a) => a.artist_id === artistId);
+    if (!artist) notFound();
+
+    const events = DEMO_UPCOMING_EVENTS.filter(
+      (e) => e.artist_id === artistId
+    );
+
+    const socials = [
+      { key: "twitter", label: "Twitter/X", icon: "🐦", url: artist.twitter },
+      { key: "facebook", label: "Facebook", icon: "📘", url: artist.facebook },
+      { key: "instagram", label: "Instagram", icon: "📸", url: artist.instagram },
+      { key: "youtube", label: "YouTube", icon: "▶️", url: artist.youtube },
+      { key: "webpage", label: "Web", icon: "🌐", url: artist.webpage },
+    ].filter((s) => s.url);
+
+    return (
+      <>
+        <Navbar />
+        <main className={styles.main}>
+          <Link href="/artists" className={styles.back}>
+            ← Volver a artistas
+          </Link>
+          <div className={styles.profile}>
+            <div className={styles.avatarPlaceholder}>
+              {artist.name.charAt(0).toUpperCase()}
+            </div>
+            <div className={styles.info}>
+              <h1 className={styles.name}>{artist.name}</h1>
+              <p className={styles.gender}>{artist.gender}</p>
+              {artist.description && (
+                <p className={styles.description}>{artist.description}</p>
+              )}
+              {socials.length > 0 && (
+                <div className={styles.socials}>
+                  {socials.map((s) => (
+                    <a
+                      key={s.key}
+                      href={s.url!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.socialLink}
+                      title={s.label}
+                    >
+                      {s.icon} {s.label}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <section className={styles.events}>
+            <h2>Próximos eventos</h2>
+            {events.length > 0 ? (
+              <ul className={styles.eventList}>
+                {events.map((event) => (
+                  <li key={event.event_id} className={styles.eventCard}>
+                    <Link href={`/events/${event.event_id}`}>
+                      <div className={styles.eventBody}>
+                        <h3 className={styles.eventName}>{event.name}</h3>
+                        <p className={styles.eventMeta}>
+                          📅{" "}
+                          {new Date(event.date).toLocaleDateString("es-ES")} ·
+                          📍 {event.localization}
+                        </p>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className={styles.empty}>No hay próximos eventos.</p>
+            )}
+          </section>
+        </main>
+      </>
+    );
+  }
 
   const supabase = await createClient();
 

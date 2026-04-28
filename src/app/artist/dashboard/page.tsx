@@ -3,10 +3,124 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import styles from "./page.module.css";
+import {
+  DEMO_LOGGED_ARTIST,
+  DEMO_ARTIST_UPCOMING_EVENTS,
+  DEMO_ARTIST_PAST_EVENTS,
+  DEMO_NOTIFICATIONS,
+} from "@/lib/demo-data";
 
-export const dynamic = "force-dynamic";
+const IS_DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 export default async function ArtistDashboardPage() {
+  if (IS_DEMO) {
+    return (
+      <>
+        <Navbar />
+        <main className={styles.main}>
+          <div className={styles.header}>
+            <div>
+              <h1 className={styles.title}>Panel de Artista</h1>
+              <p className={styles.subtitle}>
+                Bienvenido, <strong>{DEMO_LOGGED_ARTIST.name}</strong>
+              </p>
+            </div>
+            <span className={styles.logoutBtn}>Cerrar sesión</span>
+          </div>
+
+          <div className={styles.grid}>
+            <section className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <h2>Próximos eventos</h2>
+                <Link href="/artist/events/create" className={styles.actionBtn}>
+                  + Crear evento
+                </Link>
+              </div>
+              {DEMO_ARTIST_UPCOMING_EVENTS.length > 0 ? (
+                <ul className={styles.list}>
+                  {DEMO_ARTIST_UPCOMING_EVENTS.map((event) => (
+                    <li key={event.event_id} className={styles.item}>
+                      <div className={styles.itemInfo}>
+                        <span className={styles.itemName}>{event.name}</span>
+                        <span className={styles.itemMeta}>
+                          📅{" "}
+                          {new Date(event.date).toLocaleDateString("es-ES")} ·
+                          📍 {event.localization}
+                        </span>
+                      </div>
+                      <div className={styles.itemActions}>
+                        <Link
+                          href={`/artist/events/${event.event_id}/edit`}
+                          className={styles.editBtn}
+                        >
+                          Editar
+                        </Link>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className={styles.empty}>No tienes eventos próximos.</p>
+              )}
+            </section>
+
+            <div>
+              <section
+                className={styles.section}
+                style={{ marginBottom: "1rem" }}
+              >
+                <div className={styles.sectionHeader}>
+                  <h2>Encuestas</h2>
+                  <Link href="/artist/surveys" className={styles.actionBtn}>
+                    Gestionar
+                  </Link>
+                </div>
+                <p className={styles.hint}>
+                  Crea encuestas para que los asistentes valoren tus eventos.
+                </p>
+              </section>
+
+              <section className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <h2>Notificaciones</h2>
+                  <Link
+                    href="/artist/notifications"
+                    className={styles.actionBtn}
+                  >
+                    Gestionar
+                  </Link>
+                </div>
+                <ul className={styles.list}>
+                  {DEMO_NOTIFICATIONS.map((n) => (
+                    <li key={n.notification_id} className={styles.item}>
+                      <span className={styles.itemName}>{n.title}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+          </div>
+
+          {DEMO_ARTIST_PAST_EVENTS.length > 0 && (
+            <section className={styles.section} style={{ marginTop: "1rem" }}>
+              <h2 className={styles.sectionTitle}>Eventos pasados</h2>
+              <ul className={styles.list}>
+                {DEMO_ARTIST_PAST_EVENTS.map((event) => (
+                  <li key={event.event_id} className={styles.item}>
+                    <span className={styles.itemName}>{event.name}</span>
+                    <span className={styles.itemMeta}>
+                      {new Date(event.date).toLocaleDateString("es-ES")}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </main>
+      </>
+    );
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

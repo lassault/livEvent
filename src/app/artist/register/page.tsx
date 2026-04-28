@@ -6,6 +6,8 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import styles from "../login/page.module.css";
 
+const IS_DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
 const GENDER_OPTIONS = [
   "Pop",
   "Rock",
@@ -48,6 +50,12 @@ export default function ArtistRegisterPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (IS_DEMO) {
+      setSuccess(
+        "Demo: en la versión real, tu cuenta quedaría pendiente de verificación por un administrador."
+      );
+      return;
+    }
     setError("");
     setSuccess("");
     setLoading(true);

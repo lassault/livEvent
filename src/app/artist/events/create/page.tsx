@@ -6,6 +6,8 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import styles from "../../login/page.module.css";
 
+const IS_DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
 export default function CreateEventPage() {
   const router = useRouter();
   const [form, setForm] = useState({
@@ -28,6 +30,10 @@ export default function CreateEventPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (IS_DEMO) {
+      router.push("/artist/dashboard");
+      return;
+    }
     setError("");
     setLoading(true);
 
@@ -57,6 +63,12 @@ export default function CreateEventPage() {
       <main className={styles.main}>
         <div className={styles.card} style={{ maxWidth: 540 }}>
           <h1 className={styles.title}>Crear Evento</h1>
+          {IS_DEMO && (
+            <p className={styles.subtitle}>
+              Demo: rellena el formulario y haz clic en «Crear evento» para
+              volver al panel.
+            </p>
+          )}
 
           <form onSubmit={handleSubmit} className={styles.form}>
             <div className={styles.field}>

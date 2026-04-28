@@ -6,15 +6,21 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import styles from "./page.module.css";
 
+const IS_DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
 export default function ArtistLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(IS_DEMO ? "carmen@demo.livevent.es" : "");
+  const [password, setPassword] = useState(IS_DEMO ? "••••••••" : "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (IS_DEMO) {
+      router.push("/artist/dashboard");
+      return;
+    }
     setError("");
     setLoading(true);
 
@@ -45,7 +51,9 @@ export default function ArtistLoginPage() {
         <div className={styles.card}>
           <h1 className={styles.title}>Acceso Artista</h1>
           <p className={styles.subtitle}>
-            Inicia sesión para gestionar tus eventos
+            {IS_DEMO
+              ? "Demo: haz clic en «Iniciar sesión» para explorar el panel de artista"
+              : "Inicia sesión para gestionar tus eventos"}
           </p>
 
           <form onSubmit={handleSubmit} className={styles.form}>
@@ -58,6 +66,7 @@ export default function ArtistLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="tu@email.com"
+                readOnly={IS_DEMO}
               />
             </div>
             <div className={styles.field}>
@@ -69,6 +78,7 @@ export default function ArtistLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
+                readOnly={IS_DEMO}
               />
             </div>
 

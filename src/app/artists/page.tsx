@@ -2,17 +2,22 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import styles from "./page.module.css";
+import { DEMO_ARTISTS } from "@/lib/demo-data";
 
-export const dynamic = "force-dynamic";
+const IS_DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 export default async function ArtistsPage() {
-  const supabase = await createClient();
-
-  const { data: artists } = await supabase
-    .from("artists")
-    .select("artist_id, name, description, image")
-    .eq("verified", true)
-    .order("name", { ascending: true });
+  const artists = IS_DEMO
+    ? DEMO_ARTISTS
+    : await (async () => {
+        const supabase = await createClient();
+        const { data } = await supabase
+          .from("artists")
+          .select("artist_id, name, description, image")
+          .eq("verified", true)
+          .order("name", { ascending: true });
+        return data ?? [];
+      })();
 
   return (
     <>

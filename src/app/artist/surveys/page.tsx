@@ -3,10 +3,52 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import SurveysManager from "./SurveysManager";
 import Navbar from "@/components/Navbar";
+import {
+  DEMO_ARTIST_EVENTS,
+  DEMO_SURVEYS,
+} from "@/lib/demo-data";
 
-export const dynamic = "force-dynamic";
+const IS_DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 export default async function SurveysPage() {
+  if (IS_DEMO) {
+    const events = DEMO_ARTIST_EVENTS.map((e) => ({
+      event_id: e.event_id,
+      name: e.name,
+      date: e.date,
+    }));
+    return (
+      <>
+        <Navbar />
+        <main
+          style={{ maxWidth: 720, margin: "0 auto", padding: "1.5rem 1rem" }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "1rem",
+              marginBottom: "1.5rem",
+            }}
+          >
+            <Link
+              href="/artist/dashboard"
+              style={{
+                color: "var(--primary)",
+                fontSize: "0.9rem",
+                fontWeight: 500,
+              }}
+            >
+              ← Panel
+            </Link>
+            <h1 style={{ fontSize: "1.5rem", fontWeight: 700 }}>Encuestas</h1>
+          </div>
+          <SurveysManager events={events} surveys={DEMO_SURVEYS} />
+        </main>
+      </>
+    );
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

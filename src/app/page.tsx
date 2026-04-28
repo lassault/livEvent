@@ -1,9 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
+import DemoHomePage from "@/components/DemoHomePage";
 import styles from "./page.module.css";
 
-export const dynamic = "force-dynamic";
+const IS_DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 type EventFilter = "past" | "today" | "upcoming";
 
@@ -11,7 +12,18 @@ interface PageProps {
   searchParams: Promise<{ filter?: string }>;
 }
 
-export default async function HomePage({ searchParams }: PageProps) {
+// In demo mode export a simple wrapper so Next.js does not see searchParams
+// as a dependency and keeps the route statically renderable.
+function DemoPageWrapper() {
+  return (
+    <>
+      <Navbar />
+      <DemoHomePage />
+    </>
+  );
+}
+
+async function LiveHomePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const filter: EventFilter =
     params.filter === "past"
@@ -100,6 +112,8 @@ export default async function HomePage({ searchParams }: PageProps) {
     </>
   );
 }
+
+export default IS_DEMO ? DemoPageWrapper : LiveHomePage;
 
 function filterLabel(filter: EventFilter): string {
   if (filter === "today") return "hoy";
