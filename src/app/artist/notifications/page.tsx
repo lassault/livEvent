@@ -1,0 +1,111 @@
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import NotificationsManager from "./NotificationsManager";
+import Navbar from "@/components/Navbar";
+import {
+  DEMO_LOGGED_ARTIST,
+  DEMO_ARTIST_EVENTS,
+  DEMO_NOTIFICATIONS,
+} from "@/lib/demo-data";
+
+const IS_DEMO = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
+export default async function NotificationsPage() {
+  if (IS_DEMO) {
+    const events = DEMO_ARTIST_EVENTS.map((e) => ({
+      event_id: e.event_id,
+      name: e.name,
+      date: e.date,
+    }));
+    const notifications = DEMO_NOTIFICATIONS.map((n) => ({
+      notification_id: n.notification_id,
+      event_id: n.event_id,
+      title: n.title,
+      description: n.description,
+      created_at: n.created_at,
+    }));
+    return (
+      <>
+        <Navbar />
+        <main
+          style={{ maxWidth: 720, margin: "0 auto", padding: "1.5rem 1rem" }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "1rem",
+              marginBottom: "1.5rem",
+            }}
+          >
+            <Link
+              href="/artist/dashboard"
+              style={{
+                color: "var(--primary)",
+                fontSize: "0.9rem",
+                fontWeight: 500,
+              }}
+            >
+              ← Panel
+            </Link>
+            <h1 style={{ fontSize: "1.5rem", fontWeight: 700 }}>
+              Notificaciones
+            </h1>
+          </div>
+          <NotificationsManager
+            artistId={DEMO_LOGGED_ARTIST.artist_id}
+            events={events}
+            notifications={notifications}
+          />
+        </main>
+      </>
+    );
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/artist/login");
+
+  const { data: artist } = await supabase
+    .from("artists")
+    .select("artist_id, name")
+    .eq("email", user.email!)
+    .single();
+
+  if (!artist) redirect("/artist/login");
+
+  const { data: events } = await supabase
+    .from("events")
+    .select("event_id, name, date")
+    .eq("artist_id", artist.artist_id)
+    .order("date", { ascending: false });
+
+  const { data: notifications } = await supabase
+    .from("notifications")
+    .select("notification_id, event_id, title, description, created_at")
+    .eq("artist_id", artist.artist_id)
+    .order("created_at", { ascending: false });
+
+  return (
+    <>
+      <Navbar />
+      <main style={{ maxWidth: 720, margin: "0 auto", padding: "1.5rem 1rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.5rem" }}>
+          <Link href="/artist/dashboard" style={{ color: "var(--primary)", fontSize: "0.9rem", fontWeight: 500 }}>
+            ← Panel
+          </Link>
+          <h1 style={{ fontSize: "1.5rem", fontWeight: 700 }}>Notificaciones</h1>
+        </div>
+        <NotificationsManager
+          artistId={artist.artist_id}
+          events={events ?? []}
+          notifications={notifications ?? []}
+        />
+      </main>
+    </>
+  );
+}
